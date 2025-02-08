@@ -1,0 +1,11 @@
+transformers
+fastapi
+pydantic
+pygame
+gtts
+speechrecognition
+pyttsx3
+vosk
+pyaudio
+openai
+torch
