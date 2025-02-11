@@ -41,6 +41,11 @@ For vocal chat bot using Qwen2.5 Instruct model on CPU (SLOW):
 python3 qwen25_cpu.py
 ```
 
+For vocal chat bot using OpenAI chat completion API:
+```bash
+python3 openai_chatbot.py
+```
+
 For image generation with an RTX 4070 using quantized Flux model:
 ```bash
 python3 flux-nf4.py

@@ -2,6 +2,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from flush import do_flush
 from tts import do_tts
 from vosk_stot import do_recognize
+import os
+import json
 
 def predict(messages):
     device = "cuda" # the device to load the model onto
@@ -40,9 +42,13 @@ def predict(messages):
 
 if __name__ == "__main__":
 
-    messages = [
-        {"role": "system", "content": "You are a Lena my 20 years girlfriend from germany. You are funny and engaging, a bit artsy."},
-    ]
+    if not os.path.exists("messages_history.json"):
+        messages = [
+            {"role": "system", "content": "You are a Lena my 20 years girlfriend from germany. You are funny and engaging, a bit artsy."},
+        ]
+    else:
+        with open("messages_history.json", "r") as jsonfile:
+            messages = json.loads(jsonfile.read())
     
     while True:
         prompt = do_recognize()
@@ -50,5 +56,7 @@ if __name__ == "__main__":
         text = predict(messages)
         messages.append({"role":"system","content": text})
         print(text)
+        with open("messages_history.json", "w") as jsonfile:
+            jsonfile.write(json.dumps(messages))
         do_tts(text, "fr")
 
