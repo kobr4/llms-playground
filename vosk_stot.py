@@ -3,6 +3,9 @@ import pyaudio
 import json
 import os
 
+from keyboard import Keyboard
+import sshkeyboard
+
 # Here I have downloaded this model to my PC, extracted the files 
 # and saved it in local directory
 # Set the model path
@@ -17,7 +20,9 @@ model = vosk.Model(model_path)
 # Open the microphone stream
 p = pyaudio.PyAudio()
 
-def do_recognize():
+
+def do_recognize():    
+
     # Create a recognizer
     rec = vosk.KaldiRecognizer(model, 16000)
 
@@ -27,13 +32,13 @@ def do_recognize():
                     input=True,
                     frames_per_buffer=8192)
 
+    keyboard = Keyboard()
 
     print("Listening for speech.")
-    while True:
+    while keyboard.get_key() is None:
         data = stream.read(8192)#read in chunks of 4096 bytes
         if rec.AcceptWaveform(data):#accept waveform of input voice
-
-            # print(recognized_text)        
+    
             recognized_text = json.loads(rec.Result())['text']
             print(recognized_text)
             if len(recognized_text) > 0:
@@ -41,6 +46,9 @@ def do_recognize():
                 stream.close()
                 return recognized_text
     
+    
+    sshkeyboard.stop_listening()
+    return False
         #else:
         #    result = json.loads(rec.FinalResult())
         #    recognized_text = result['text']

@@ -3,6 +3,7 @@ from vosk_stot import do_recognize
 import os
 import json
 from openai import OpenAI
+import time
 client = OpenAI()
 
 def predict(messages):
@@ -15,7 +16,7 @@ if __name__ == "__main__":
 
     if not os.path.exists("messages_history.json"):
         messages = [
-            {"role": "system", "content": "You are a Lena my 20 years girlfriend from germany. You are funny and engaging, a bit artsy."},
+            {"role": "system", "content": "You are a Lena my tech savvy assistant. You are funny and engaging."},
         ]
     else:
         with open("messages_history.json", "r") as jsonfile:
@@ -23,9 +24,13 @@ if __name__ == "__main__":
     
     while True:
         prompt = do_recognize()
+        if prompt == False:
+            time.sleep(2)
+            prompt = input("Keyboard input:")
+
         messages.append({"role":"user","content": prompt})
         text = predict(messages)
-        messages.append({"role":"lena","content": text})
+        messages.append({"role":"assistant","content": text})
         print(text)
         with open("messages_history.json", "w") as jsonfile:
             jsonfile.write(json.dumps(messages))
