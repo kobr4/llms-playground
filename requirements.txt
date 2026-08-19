@@ -9,3 +9,4 @@ vosk
 pyaudio
 openai
 torch
+sshkeyboard
