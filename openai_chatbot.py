@@ -6,13 +6,24 @@ from openai import OpenAI
 import time
 import re
 from pathlib import Path
+import pyscreenshot
+from io import BytesIO
+import base64
 client = OpenAI()
 
 def predict(messages):
-    chart_completion = client.chat.completions.create(model="gpt-4o", messages=messages)
+    chart_completion = client.chat.completions.create(model="gpt-5.6", messages=messages)
     return chart_completion.choices[0].message.content
     
 
+
+def create_capture():
+    image = pyscreenshot.grab(backend="mss")
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    base64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return base64_image
+    
 
 def create_code_hint(directory):
     code_hint = f"""
@@ -53,13 +64,24 @@ if __name__ == "__main__":
 
 
         if "#code" in prompt:
-            prompt = prompt.replace("#code", create_code_hint("./output")) 
+            prompt = prompt.replace("#code", create_code_hint("./output"))
+
+        if "#capture" in prompt:
+            prompt = prompt.replace("#capture", prompt)
+            prompt = [ 
+                {"type": "text", "text": prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {"url":f"data:image/jpeg;base64,{create_capture()}", "detail": "high"},
+                }]
+        
         messages.append({"role":"user","content": prompt})
         text = predict(messages)
         print(text)
         code_snippets = extract_code(text)
         for filename, code in code_snippets:
-            Path(filename.rsplit('/',1)[0]).mkdir(parents=True,exist_ok=True)
+            if "/" in filename:
+                Path(filename.rsplit('/',1)[0]).mkdir(parents=True,exist_ok=True)
             print(code,  file=open(filename, 'w'))
             text = text.replace(code, "")
 
