@@ -10,3 +10,8 @@ pyaudio
 openai
 torch
 sshkeyboard
+pyscreenshot
+pillow
+mss
+accelerate
+optimum

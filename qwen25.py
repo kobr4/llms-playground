@@ -1,7 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from flush import do_flush
-from tts import do_tts
-from vosk_stot import do_recognize
+
 import os
 import json
 
@@ -41,6 +40,9 @@ def predict(messages):
     return response
 
 if __name__ == "__main__":
+
+    from tts import do_tts
+    from vosk_stot import do_recognize
 
     if not os.path.exists("messages_history.json"):
         messages = [
