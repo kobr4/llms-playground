@@ -13,3 +13,5 @@ sshkeyboard
 pyscreenshot
 pillow
 mss
+accelerate
+optimum

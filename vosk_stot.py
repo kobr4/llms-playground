@@ -44,6 +44,7 @@ def do_recognize():
             if len(recognized_text) > 0:
                 stream.stop_stream()
                 stream.close()
+                sshkeyboard.stop_listening()
                 return recognized_text
     
     

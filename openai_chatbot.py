@@ -1,14 +1,6 @@
-from tts import do_tts
-from vosk_stot import do_recognize
-import os
-import json
+
 from openai import OpenAI
-import time
-import re
-from pathlib import Path
-import pyscreenshot
-from io import BytesIO
-import base64
+
 client = OpenAI()
 
 def predict(messages):
@@ -16,37 +8,59 @@ def predict(messages):
     return chart_completion.choices[0].message.content
     
 
-
-def create_capture():
-    image = pyscreenshot.grab(backend="mss")
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
-    base64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    return base64_image
-    
-
-def create_code_hint(directory):
-    code_hint = f"""
-    - code is in directory {directory}
-    - code should be between "[CODE(filename='filename')]" and "[/CODE]" (note the / to signify its closing) 
-    - filename indicates the name of the file
-    """
-    return code_hint
-
-def extract_code(input):
-    matches = re.findall(
-        r"\[CODE\(filename=['\"](.*?)['\"]\)\](.*?)\[/CODE\]",
-        text,
-        re.DOTALL
+def generate_image(prompt):
+    response = client.responses.create(
+        model="gpt-5.6",
+        input="Generate an image of gray tabby cat hugging an otter with an orange scarf",
+        tools=[{"type": "image_generation", "action": "generate"}],
     )
 
-    #for filename, code in matches:
-    #    print(filename)
-    #    print(code.strip())
+    # Save the image to a file
+    image_data = [
+        output.result
+        for output in response.output
+        if output.type == "image_generation_call"
+    ]
 
-    return matches
+    return image_data[0] if image_data else None    
 
 if __name__ == "__main__":
+
+    import os
+    import json    
+    import time
+    import re
+    from pathlib import Path
+    import pyscreenshot
+    from io import BytesIO
+    import base64    
+    from tts import do_tts
+    from vosk_stot import do_recognize
+
+    def create_capture():
+        image = pyscreenshot.grab(backend="mss")
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        base64_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        return base64_image
+        
+
+    def create_code_hint(directory):
+        code_hint = f"""
+        - code is in directory {directory}
+        - code should be between "[CODE(filename='filename')]" and "[/CODE]" (note the / to signify its closing) 
+        - filename indicates the name of the file
+        """
+        return code_hint
+
+    def extract_code(input):
+        matches = re.findall(
+            r"\[CODE\(filename=['\"](.*?)['\"]\)\](.*?)\[/CODE\]",
+            text,
+            re.DOTALL
+        )
+
+        return matches
 
     if not os.path.exists("messages_history.json"):
         messages = [
@@ -85,6 +99,10 @@ if __name__ == "__main__":
             print(code,  file=open(filename, 'w'))
             text = text.replace(code, "")
 
+        
+        if not isinstance(messages[-1]['content'], str) :
+            del messages[-1]
+        
         messages.append({"role":"assistant","content": text})
         
         with open("messages_history.json", "w") as jsonfile:
